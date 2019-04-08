@@ -1,6 +1,6 @@
 # DBus2
 
-**DBus** 是本人自己开发的，类似 EventBus 的消息订阅发布框架。链接：[DBus](https://github.com/mengzhinan/DBus "点击查看 DBus 源码")   --   [我的博客](https://blog.csdn.net/fesdgasdgasdg/article/details/79121783 "点击查看博客")
+**DBus** 是本人自己开发的，类似 EventBus 的消息订阅发布框架。链接：[DBus源码](https://github.com/mengzhinan/DBus "点击查看 DBus 源码")   --   [我的博客](https://blog.csdn.net/fesdgasdgasdg/article/details/79121783 "点击查看博客")
 
 **DBus2** 是在 **DBus** 的基础上优化改进版本。
 
