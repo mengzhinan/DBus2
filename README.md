@@ -7,7 +7,7 @@
 ## 用法很简单：
 
 
-"""java
+'''java
 public class MainActivity extends AppCompatActivity {
     private TextView textView1;
 
@@ -59,4 +59,6 @@ public class MainActivity extends AppCompatActivity {
         // 如果 post 时已经是子线程了，则在当前子线程中接收消息
     }
 }
-"""
+'''
+
+
