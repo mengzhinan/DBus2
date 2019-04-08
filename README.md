@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
     // 必须标记 DInject2 注解
     // 方法只能包含一个参数，方法修饰符和返回值无限制
-    // Event1 参数类型，与 post 的参数类型相同。
+    // Event2 参数类型，与 post 的参数类型相同。
     // 默认在 UI 线程中接收消息，可以自己执行线程
     @DInject2(thread = DThread2.TYPE_CURRENT_CHILD_THREAD)
     public void a2(Event2 e) {
