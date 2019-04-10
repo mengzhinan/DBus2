@@ -3,6 +3,7 @@ package com.duke.dbus2.core;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.annotation.NonNull;
 
 import com.duke.dbus2.annotations.DInject2;
 import com.duke.dbus2.entities.DHandlerBean2;
@@ -17,6 +18,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 /**
  * author: duke
@@ -26,109 +28,55 @@ import java.util.HashMap;
 public class DHelper2 {
 
     /**
-     * 检查并设置默认的线程类型
-     *
-     * @param thread 当前的线程值
-     * @return 修正后的合法线程值
+     * 清除无效的观察者对象
      */
-    public static int checkOrSetDefaultThread(int thread) {
-        if (thread != DThread2.TYPE_MAIN_UI_THREAD &&
-                thread != DThread2.TYPE_CURRENT_CHILD_THREAD &&
-                thread != DThread2.TYPE_NEW_CHILD_THREAD) {
-            // 默认在主线程执行
-            thread = DThread2.TYPE_MAIN_UI_THREAD;
-        }
-        return thread;
-    }
-
-    /**
-     * 清理无效的观察者对象
-     */
-    static ObserverWrapper2 clearAndGetObserverHeader(ObserverWrapper2 oldHeader) {
-        long startTime = System.currentTimeMillis();
-        if (DUtils2.isNull(oldHeader)) {
-            return null;
-        }
-        // 循环，找到有效的头节点
-        do {
-            if (DUtils2.isEmpty(oldHeader.observerWeakRef)) {
-                // 链表头移到下一个节点
-                oldHeader = oldHeader.next;
-            } else {
-                break;
-            }
-        } while (oldHeader != null);
-        if (DUtils2.isNull(oldHeader)) {
-            return null;
-        }
-
-        // 保存新的链表头
-        ObserverWrapper2 newHeader = oldHeader;
-
-        // 清空无效的节点
-        // 清空无效的节点
-        ObserverWrapper2 preObserver = oldHeader;
-        ObserverWrapper2 indexObserver = preObserver.next;
-        while (indexObserver != null) {
-            if (DUtils2.isEmpty(indexObserver.observerWeakRef)) {
-                // 当前指针向后移动
-                indexObserver = indexObserver.next;
-                // 丢弃链表中无效的元素
-                preObserver.next = indexObserver;
-            } else {
-                // 链表前一个参考标记向后移动
-                preObserver = indexObserver;
-                // 当前指针向后移动
-                indexObserver = indexObserver.next;
+    static void clearInvalidObserver(@NonNull LinkedList<ObserverWrapper2> linkedList) {
+        ObserverWrapper2 observerWrapper2;
+        for (int i = 0; i < linkedList.size(); i++) {
+            observerWrapper2 = linkedList.get(i);
+            if (observerWrapper2 == null ||
+                    DUtils2.isEmpty(observerWrapper2.dMethod2ArrayList) ||
+                    DUtils2.isEmpty(observerWrapper2.observerWeakRef)) {
+                linkedList.remove(observerWrapper2);
+                i--;
             }
         }
-
-        DLog2.logTime(startTime, "clearAndGetObserverHeader");
-        return newHeader;
     }
 
     /**
-     * 获取观察者数量
-     *
-     * @return 观察者数量
+     * 移除观察者对象
      */
-    static int getObserverSize(ObserverWrapper2 header) {
-        clearAndGetObserverHeader(header);
-        if (DUtils2.isNull(header)) {
-            return 0;
+    static void removeObserver(@NonNull Object observer, @NonNull LinkedList<ObserverWrapper2> linkedList) {
+        ObserverWrapper2 observerWrapper2;
+        int size = linkedList.size();
+        for (int i = 0; i < size; i++) {
+            observerWrapper2 = linkedList.get(i);
+            if (observerWrapper2 != null &&
+                    !DUtils2.isEmpty(observerWrapper2.observerWeakRef) &&
+                    observerWrapper2.observerWeakRef.get() == observer) {
+                linkedList.remove(observerWrapper2);
+                return;
+            }
         }
-        int size = 0;
-        ObserverWrapper2 node = header;
-        while (node != null) {
-            size++;
-            node = node.next;
-        }
-        return size;
     }
 
     /**
-     * 检查当前观察者对象是否注册过
+     * 当前list中是否包含指定的观察者对象
      *
      * @param observer 观察者对象
-     * @return true：已经注册；false：未注册
+     * @return 是否包含
      */
-    static boolean isRegistered(Object observer, ObserverWrapper2 header) {
-        if (DUtils2.isNull(observer)) {
-            // 观察者对象为 null，视为已经注册
-            return true;
-        }
-        if (DUtils2.isNull(header)) {
-            // 链表为 null，未注册
-            return false;
-        }
-        ObserverWrapper2 node = header;
-        do {
-            if (!DUtils2.isEmpty(node.observerWeakRef) && node.observerWeakRef.get() == observer) {
+    static boolean isRegistered(@NonNull Object observer, @NonNull LinkedList<ObserverWrapper2> linkedList) {
+        ObserverWrapper2 observerWrapper2;
+        int size = linkedList.size();
+        for (int i = 0; i < size; i++) {
+            observerWrapper2 = linkedList.get(i);
+            if (observerWrapper2 != null &&
+                    !DUtils2.isEmpty(observerWrapper2.observerWeakRef) &&
+                    observerWrapper2.observerWeakRef.get() == observer) {
                 return true;
-            } else {
-                node = node.next;
             }
-        } while (node != null);
+        }
         return false;
     }
 
@@ -147,6 +95,7 @@ public class DHelper2 {
             return new ArrayList<>();
         }
         Class clazz = observer.getClass();
+        // 判断类的信息是否已经添加，避免重复添加
         if (classMethodMap.containsKey(clazz)) {
             return classMethodMap.get(clazz);
         }
@@ -199,7 +148,7 @@ public class DHelper2 {
             // 获取参数类型
             Class[] paramTypes = method.getParameterTypes();
             //判断参数个数
-            if (paramTypes.length < 1) {
+            if (paramTypes.length != 1) {
                 return false;
             }
             //判断参数类型
@@ -213,23 +162,19 @@ public class DHelper2 {
     }
 
     /**
-     * 循环当前观察者的所有注册方法
+     * 检查并设置默认的线程类型
      *
-     * @param event             调用参数对象
-     * @param observer          观察者对象
-     * @param dMethod2ArrayList 观察者的所有注册方法
+     * @param thread 当前的线程值
+     * @return 修正后的合法线程值
      */
-    static void findAndInvokeMethod(Object event, Object observer, ArrayList<DMethod2> dMethod2ArrayList) {
-        if (DUtils2.isNull(event) ||
-                DUtils2.isNull(observer) ||
-                DUtils2.isEmpty(dMethod2ArrayList)) {
-            return;
+    public static int checkOrSetDefaultThread(int thread) {
+        if (thread != DThread2.TYPE_MAIN_UI_THREAD &&
+                thread != DThread2.TYPE_CURRENT_CHILD_THREAD &&
+                thread != DThread2.TYPE_NEW_CHILD_THREAD) {
+            // 默认在主线程执行
+            thread = DThread2.TYPE_MAIN_UI_THREAD;
         }
-        int size = dMethod2ArrayList.size();
-        // 循环当前观察者的所有注册方法
-        for (int i = 0; i < size; i++) {
-            switchThread(event, observer, dMethod2ArrayList.get(i));
-        }
+        return thread;
     }
 
     /**
@@ -239,16 +184,7 @@ public class DHelper2 {
      * @param observer 观察者对象
      * @param dMethod2 观察者的注册方法
      */
-    private static void switchThread(final Object event, final Object observer, final DMethod2 dMethod2) {
-        if (DUtils2.isNull(dMethod2) ||
-                DUtils2.isNull(dMethod2.method) ||
-                DUtils2.isNull(dMethod2.paramClass) ||
-                DUtils2.isNull(event) ||
-                DUtils2.isNull(observer) ||
-                event.getClass() != dMethod2.paramClass) {
-            // 如果参数类型不一致，不执行调用
-            return;
-        }
+    static void switchThread(@NonNull final Object event, @NonNull final Object observer, @NonNull final DMethod2 dMethod2) {
         try {
             if (dMethod2.thread == DThread2.TYPE_MAIN_UI_THREAD) {
                 // 主线程必须要用 handler 调用
@@ -298,6 +234,13 @@ public class DHelper2 {
                 Object event = dHandlerBean2.event;
                 Object observer = dHandlerBean2.observerWeakRef.get();
                 DMethod2 dMethod2 = dHandlerBean2.dMethod2;
+                if (event == null ||
+                        observer == null ||
+                        dMethod2 == null ||
+                        dMethod2.method == null ||
+                        dMethod2.paramClass == null) {
+                    return;
+                }
                 invoke(event, observer, dMethod2);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -313,14 +256,7 @@ public class DHelper2 {
      * @param observer 观察者对象
      * @param dMethod2 观察者的注册方法
      */
-    private static void invoke(Object event, Object observer, DMethod2 dMethod2) {
-        if (DUtils2.isNull(dMethod2) ||
-                DUtils2.isNull(dMethod2.method) ||
-                DUtils2.isNull(dMethod2.paramClass) ||
-                DUtils2.isNull(event) ||
-                DUtils2.isNull(observer)) {
-            return;
-        }
+    private static void invoke(@NonNull Object event, @NonNull Object observer, @NonNull DMethod2 dMethod2) {
         try {
             dMethod2.method.setAccessible(true);
             // core, 反射调用

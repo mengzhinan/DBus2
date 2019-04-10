@@ -13,11 +13,6 @@ import java.util.ArrayList;
 public class ObserverWrapper2 {
 
     /**
-     * 下一个节点
-     */
-    public ObserverWrapper2 next;
-
-    /**
      * 观察者弱引用对象
      */
     public WeakReference<Object> observerWeakRef;
@@ -27,15 +22,12 @@ public class ObserverWrapper2 {
      */
     public ArrayList<DMethod2> dMethod2ArrayList;
 
-    public ObserverWrapper2(Object observer,
-                            ArrayList<DMethod2> dMethod2ArrayList,
-                            ObserverWrapper2 header) {
+    public ObserverWrapper2(Object observer, ArrayList<DMethod2> dMethod2ArrayList) {
         if (DUtils2.isNull(observer) || DUtils2.isEmpty(dMethod2ArrayList)) {
             throw new IllegalArgumentException("observer or method list is null exception.");
         }
         this.observerWeakRef = new WeakReference<>(observer);
         this.dMethod2ArrayList = dMethod2ArrayList;
-        this.next = header;
     }
 
 }
