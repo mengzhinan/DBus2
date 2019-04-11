@@ -21,7 +21,7 @@ public @interface DInject2 {
     /**
      * 当前注解的方法在哪个线程中执行
      *
-     * @return 参考 DThread2 接口定义  0：UI线程，1：子线程
+     * @return 参考 {@link DThread2} 接口定义  0：UI线程，1、2：子线程
      */
     int thread() default DThread2.TYPE_MAIN_UI_THREAD;
 

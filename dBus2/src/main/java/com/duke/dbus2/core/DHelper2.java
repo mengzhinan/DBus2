@@ -86,14 +86,8 @@ public class DHelper2 {
      * @param observer 观察者类对象
      * @return 注册方法集合
      */
-    static ArrayList<DMethod2> addClassInfoAndGetMethods(Object observer,
-                                                         HashMap<Class, ArrayList<DMethod2>> classMethodMap) {
-        if (DUtils2.isNull(classMethodMap)) {
-            throw new IllegalArgumentException("classMethodMap is null exception.");
-        }
-        if (DUtils2.isNull(observer)) {
-            return new ArrayList<>();
-        }
+    static ArrayList<DMethod2> addClassInfoAndGetMethods(@NonNull Object observer,
+                                                         @NonNull HashMap<Class, ArrayList<DMethod2>> classMethodMap) {
         Class clazz = observer.getClass();
         // 判断类的信息是否已经添加，避免重复添加
         if (classMethodMap.containsKey(clazz)) {
@@ -259,6 +253,11 @@ public class DHelper2 {
     private static void invoke(@NonNull Object event, @NonNull Object observer, @NonNull DMethod2 dMethod2) {
         try {
             dMethod2.method.setAccessible(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            DLog2.logD(e.getMessage());
+        }
+        try {
             // core, 反射调用
             dMethod2.method.invoke(observer, event);
         } catch (IllegalAccessException e) {

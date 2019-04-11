@@ -21,7 +21,7 @@ public class DBus2 {
     /**
      * 观察者 类 和 注册方法 的集合
      */
-    private static final HashMap<Class, ArrayList<DMethod2>> mClassMethodMap = new HashMap<>();
+    private static final HashMap<Class, ArrayList<DMethod2>> mClassCacheMethodMap = new HashMap<>();
 
     /**
      * 观察者 对象 集合
@@ -73,11 +73,12 @@ public class DBus2 {
             DLog2.logD(observer.getClass().getSimpleName() + " observer has registered event.");
             return;
         }
-        ArrayList<DMethod2> list = DHelper2.addClassInfoAndGetMethods(observer, mClassMethodMap);
-        if (!DUtils2.isEmpty(list)) {
-            // 在链表头位置插入新的观察者对象
-            mObserverLinkedList.addFirst(new ObserverWrapper2(observer, list));
+        ArrayList<DMethod2> list = DHelper2.addClassInfoAndGetMethods(observer, mClassCacheMethodMap);
+        if (DUtils2.isEmpty(list)) {
+            return;
         }
+        // 在链表头位置插入新的观察者对象
+        mObserverLinkedList.addFirst(new ObserverWrapper2(observer, list));
         clearInvalidObserver();
         DLog2.logTime(startTime, "register");
     }

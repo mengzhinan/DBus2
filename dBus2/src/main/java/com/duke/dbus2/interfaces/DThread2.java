@@ -3,7 +3,7 @@ package com.duke.dbus2.interfaces;
 /**
  * author: duke
  * dateTime: 2019-04-05 16:15
- * description:
+ * description: 常量，标记线程类型
  */
 public interface DThread2 {
 

@@ -1,6 +1,7 @@
 package com.duke.dbus2.entities;
 
 import com.duke.dbus2.core.DHelper2;
+import com.duke.dbus2.interfaces.DThread2;
 import com.duke.dbus2.util.DUtils2;
 
 import java.lang.reflect.Method;
@@ -17,7 +18,7 @@ public class DMethod2 {
      */
     public Method method;
     /**
-     * 在哪个线程执行的方法，参考 DThread2 接口
+     * 在哪个线程执行的方法，参考 {@link DThread2} 接口
      */
     public int thread;
 
