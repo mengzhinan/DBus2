@@ -21,12 +21,12 @@ public class DBus2 {
     /**
      * 观察者 类 和 注册方法 的集合
      */
-    private static final HashMap<Class, ArrayList<DMethod2>> mClassCacheMethodMap = new HashMap<>();
+    private final HashMap<Class, ArrayList<DMethod2>> mClassCacheMethodMap = new HashMap<>();
 
     /**
      * 观察者 对象 集合
      */
-    private static final LinkedList<ObserverWrapper2> mObserverLinkedList = new LinkedList<>();
+    private final LinkedList<ObserverWrapper2> mObserverLinkedList = new LinkedList<>();
 
     private static class Inner {
         private static final DBus2 instance = new DBus2();
